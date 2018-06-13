@@ -1,5 +1,5 @@
 #'###############################################################################################
-#' This class SeqDat will only require a count matrix and the gene annotation
+#' This class RNA.seq.analyzer will only require a count matrix and the gene annotation
 #' of the genes in the count matrix. The count matrix should be named using 
 #' x.1 x.2 vs y.1 y.2 as the names will be used to set up the contrast. Notably, 
 #' the contrast can easily be changed by simply re-ordering the columns in the count
@@ -15,10 +15,10 @@
 #' @author Rick Beeloo, Koen v.d. Heide and Thomas Reinders
 #'###############################################################################################
 setClass(
-  Class = "SeqDat", 
+  Class = "RNA.seq.analyzer", 
   representation = representation(count.matrix = "matrix",
                                   sample.annotation = "data.frame",
-                                  deseq2.data ="DESeqDataSet",
+                                  deseq2.data = "DESeqDataSet",
                                   deseq2.result = "data.frame",
                                   deseq2.de = "data.frame",
                                   edger.data = "DGEList",
@@ -38,7 +38,7 @@ setClass(
 #' @param gene.annotation, a data frame in which each row is a gene, and the first 
 #' row should be named (ORF) all other metadata columns are not directly used and therefore
 #' not restricted to naming.  
-setMethod("initialize", "SeqDat", function(.Object, count.matrix, gene.annotation){
+setMethod("initialize", "RNA.seq.analyzer", function(.Object, count.matrix, gene.annotation){
   .Object@count.matrix <- count.matrix
   .Object@gene.annotation <- gene.annotation
   .Object@sample.annotation = data.frame(condition = gsub("\\.1|.2", "", colnames(count.matrix)))
@@ -73,7 +73,7 @@ setGeneric("run.all", function(.Object)
 #' @description This method filters out genes with low counts
 #' @param wanted.ids, a list of gene ids for which the annotation should 
 #' be retrieved.
-setMethod("filter.low.counts", signature("SeqDat"), function(.Object, cpm.cut.off) {
+setMethod("filter.low.counts", signature("RNA.seq.analyzer"), function(.Object, cpm.cut.off) {
   count.data <- .Object@count.matrix
   keep <- rowSums(cpm(count.data)>1) >= 2
   .Object@count.matrix <- count.data[keep,]
@@ -83,7 +83,7 @@ setMethod("filter.low.counts", signature("SeqDat"), function(.Object, cpm.cut.of
 #' @description This method can be used to run limma in default settings
 #' The original results will be saved in Object@limma.data (EList object), 
 #' whereas the standarized results will be saved in Object@limma.result
-setMethod("run.limma", signature("SeqDat"), function(.Object) {
+setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
   require(limma)
   require(edgeR)
   groups = factor(.Object@sample.annotation$condition)
@@ -109,7 +109,7 @@ setMethod("run.limma", signature("SeqDat"), function(.Object) {
 #' @description This method can be used to run edgeR in default settings
 #' The original results will be saved in Object@edger.data (DGEList object), 
 #' whereas the standarized results will be saved in Object@edger.result 
-setMethod("run.edger", signature("SeqDat"), function(.Object) {
+setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
   require(edgeR)
   groups = factor(.Object@sample.annotation$condition)
   edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
@@ -137,12 +137,12 @@ setMethod("run.edger", signature("SeqDat"), function(.Object) {
 })
 
 #' @description This method can be used to run DESeq2 in default settings
-#' The original results will be saved in Object@deseq2.data (DESeqDataSet), 
+#' The original results will be saved in Object@deseq2.data (DERNA.seq.analyzeraSet), 
 #' whereas the standarized results will be saved in Object@deseq2.result
-setMethod("run.deseq2", signature("SeqDat"), function(.Object) {
+setMethod("run.deseq2", signature("RNA.seq.analyzer"), function(.Object) {
   require(DESeq2)
   groups <- factor(.Object@sample.annotation$condition)
-  DESeq2.ds <- DESeq2::DESeqDataSetFromMatrix(countData = .Object@count.matrix, 
+  DESeq2.ds <-DESeq2::DESeqDataSetFromMatrix(countData = .Object@count.matrix, 
                                               colData = data.frame(condition = groups), 
                                               design = ~ condition)
   DESeq2.ds <- DESeq2::DESeq(DESeq2.ds, quiet = TRUE)
@@ -163,7 +163,7 @@ setMethod("run.deseq2", signature("SeqDat"), function(.Object) {
 #' deseq2.de (depending on which of these was/were used)
 #' @param p.val, the p-value cut-off that should be used to determine
 #' significance. 
-setMethod("determine.significance", signature("SeqDat"), function(.Object, p.val) {
+setMethod("determine.significance", signature("RNA.seq.analyzer"), function(.Object, p.val) {
   if (nrow(.Object@limma.result) != 0) {
     de<- .Object@limma.result[.Object@limma.result$adjpvalue < p.val,]
     print(paste0('limma: ', nrow(de), ' significant genes'))
@@ -185,7 +185,7 @@ setMethod("determine.significance", signature("SeqDat"), function(.Object, p.val
 #' @description This method can be used to draw a venn diagram of the DE genes
 #' This rquires that all the packages are called (either seperatetely 
 #' or all together using run.all) 
-setMethod("draw.venn.diagram", signature("SeqDat"), function(.Object) {
+setMethod("draw.venn.diagram", signature("RNA.seq.analyzer"), function(.Object) {
   require(VennDiagram)
   if (nrow(.Object@limma.de) != 0 & 
       nrow(.Object@edger.de) != 0 &
@@ -207,14 +207,14 @@ setMethod("draw.venn.diagram", signature("SeqDat"), function(.Object) {
 #' @description This method can be used to retrieve te annotation for a list of gene ids,
 #' @param wanted.ids, a list of gene ids for which the annotation should 
 #' be retrieved.
-setMethod("get.annotation", signature("SeqDat"), function(.Object, wanted.ids) {
+setMethod("get.annotation", signature("RNA.seq.analyzer"), function(.Object, wanted.ids) {
   anno <- .Object@gene.annotation
   anno <- anno[anno$ORF %in% wanted.ids,]
   anno
 })
 
 #' @description This method can be used to run all DESeq2, edgeR and limma at once
-setMethod("run.all", signature("SeqDat"), function(.Object) {
+setMethod("run.all", signature("RNA.seq.analyzer"), function(.Object) {
   .Object <- run.deseq2(.Object)
   .Object <- run.edger(.Object)
   .Object <- run.limma(.Object)
