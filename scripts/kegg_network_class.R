@@ -1,3 +1,11 @@
+#'###############################################################################################
+#' This class, KEGG.network, aids in building a network in which the nodes represent the ORFs and 
+#' patwhays. The edges between show the pathways in which each ORF was mapped. Furthermore, the 
+#' ORF are coloured red and green for up and down regulation, respectively. 
+#' @details: Last update 14-07-18
+#' @author Rick Beeloo, Koen v.d. Heide and Thomas Reinders
+#'###############################################################################################
+#'
 setClass(
   Class = "KEGG.network", 
   representation = representation(de.genes = 'data.frame',
@@ -85,7 +93,10 @@ setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
 }
 )
 
-
+#' @description This function actually draw the network and returns it
+#' @param name, the node name type that should be used name = locus tag, alt.name = ORF name
+#' @param direct.visible, when set to TRUE the node names will be shown, when set to FALSE
+#' the user needs to hover over the node names to see these.
 setMethod("draw.network", signature("KEGG.network"), function(.Object, name, direct.visible = FALSE) {
   opacity <- if (direct.visible) 1 else 0
   network <- forceNetwork(Links = .Object@links, Nodes = .Object@nodes, Source = "source",

@@ -37,9 +37,10 @@ source('scripts/RNA_seq_analyzer_class.R')
 source('scripts/kegg_annotater_class.R')
 
 ##################################################################################################
-# GLOBAL VARIABLES
+#------------------------------------------------------------------------------------------------
+# PART 1: Loading data + KEGG analysis
+#------------------------------------------------------------------------------------------------
 ##################################################################################################
-SPECIES = 'lpl'
 
 ##################################################################################################
 # Loading data
@@ -114,11 +115,11 @@ kegg.table <- get.kegg.table(wcfs1.kegg)
 print(kegg.table)
 
 # - We can download all pathways at once
-map.kegg.pathway(wcfs1.kegg, c('lpl03010'), c('ribose'))
+map.kegg.pathway(wcfs1.kegg, kegg.table$pathway.id, kegg.table$pathway.name)
 
 # - As pathview does not automatically remove the pathway PNG and XML files
 # - We wrote a little function to do so
-remove.junk(wcfs1.kegg, c('lpl00010','lpl03010'))
+remove.junk(wcfs1.kegg, wcfs1.kegg, kegg.table$pathway.id )
 
 
 ##################################################################################################
@@ -149,35 +150,38 @@ network.named <- draw.network(wcfs1.network, 'alt.name', TRUE)
 network.named
 
 
+#################################################################################################
+#------------------------------------------------------------------------------------------------
+# PART 2: Comparing results with ClusterProfiler package
+#------------------------------------------------------------------------------------------------
+#################################################################################################
+
 ##################################################################################################
 # WCFS1 analysis: Why is the pentose phosphate pathway not enriched by ClusterProfiler
 ##################################################################################################
-# Note that we did this previously, however this time we use ALL the edgeR results,
-# not only the DE ones as all the genes were used as input for ClusterProfiler.
-wcfs1.sign.talbe <- wcfs1.result %>%
-  dplyr::select(ORF,logFC, adjpvalue) %>%
-  left_join(gene.info) %>%
-  filter(pathway.name %in% priority.interest) %>%
+# Selecting all genes and look their pathways and color the according to whether these 
+# were significant (DE)
+wcfs1.sign.table <- wcfs1.kegg@all.kegg.genes.filtered %>%
   mutate(significant = 
            case_when(
              adjpvalue < 0.05 ~ TRUE,
              TRUE ~ FALSE # adjpvalue >-0.05 to FALSE
            ))
 
-# Plotting the number of signifcant genes and non significant genes
-wcfs1.sign.talbe %>%
+# Plotting the number of signifcant genes and non significant genes for 
+# each of the pathways of interest
+wcfs1.sign.table %>%
   group_by(pathway.name, significant) %>%
-  summarise(count = n()) %>%
+  summarise(count = n()) %>% # Counting the number of signifcant and non-significant genes per pathway
   ggplot(aes( x = pathway.name, y = count, fill = significant)) +
   geom_bar(stat = 'identity')
 
 
 # Plotting the fold change spread over the pahtways and color
 # according to whether the genes was signifcant or not
-wcfs1.sign.talbe %>%
+wcfs1.sign.table %>%
   ggplot(aes(x = pathway.name, y = logFC, col = significant )) +
   geom_point(size = 3)
-
 
 
 ##################################################################################################
@@ -195,12 +199,6 @@ kegg.gsea <- gseKEGG(geneList  = wcfs1.gene.list,
                      organism = SPECIES,
                      pvalueCutoff = 0.05, 
                      minGSSize = 1)
-
-# - As one gene can correspond to multiple pathways we will use the previously
-# - conducted KEGG enrichment + knowledge about ribose pathways to specify a priority/selection
-priority.interest <- c('Pyruvate metabolism','Glycolysis / Gluconeogenesis',
-                       'Fatty acid biosynthesis','Galactose metabolism',
-                       'Pentose phosphate pathway','Pyrimidine metabolism')
 
 # - Plotting the fold changes of the genes and their connection to the pathway
 # - in which these were found. 

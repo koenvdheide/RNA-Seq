@@ -1,3 +1,16 @@
+#'###############################################################################################
+#' This class can be used to annotate a set of genes based on KEGG. Firstly, genes will be mapped
+#' to KEGG and the annotation will be coupled. Hereafter, the user can choose to plot info 
+#' regarding these pathways. Such as a plot showing the fold change spread in these pathways, or 
+#' a plot from the pathview package. In the latter the genes names will be shown and the rectangles 
+#' , which represent genes, will be coloured according to their fold change. Furthermore, pathview
+#' produces some files such as a PNG file, XML file and a result PNG file. Unfortunately the
+#' pathview packackage does not remove the files it uses to create the output PNG, therefore
+#' we also added a little function to remove these. #' 
+#' @details: Last update 14-07-18
+#' @author Rick Beeloo, Koen v.d. Heide and Thomas Reinders
+#'###############################################################################################
+
 setClass(
   Class = "KEGG.annotater", 
   representation = representation(de.genes = 'data.frame',
@@ -47,7 +60,7 @@ setMethod("initialize", "KEGG.annotater", function(.Object, all.genes, de.genes,
 #' @description This method queries the KEGG database for the species name and 
 #' retrieves the corresponding pathway and gene information
 setMethod("gather.kegg.annotation", signature("KEGG.annotater"), function(.Object) {
-  # - Retrieving data from KEGG and make annotation table hereof. Note that
+  # - Retrieving data from KEGG and making an annotation table hereof. Note that
   # - we could have used the KEGGREST package. However this package
   # - returns a character vector insted of a data frame, which would require 
   # - an extra processing step. 
@@ -62,13 +75,11 @@ setMethod("gather.kegg.annotation", signature("KEGG.annotater"), function(.Objec
   gene.info$pathway.name <- gsub(' (-.*)|/',"", gene.info$pathway.name)
 
   # - Saving the results in the Object
-  .Object@kegg.annotation <- .Object@de.genes %>% left_join(gene.info)
+  .Object@kegg.annotation <- gene.info
   .Object
 })
 
-
-#' @description This function  couples the KEGG annotation to DE genes and to
-#' all genes. 
+#' @description This function  couples the KEGG annotation to the genes
 setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Object) {
   .Object@de.kegg.genes <- .Object@de.genes %>% left_join(.Object@kegg.annotation)
   .Object@all.kegg.genes <- .Object@all.genes %>% left_join(.Object@kegg.annotation)
@@ -77,21 +88,25 @@ setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Objec
 
 
 #' @description This funtion filters the DE genes and all genes for pathways of the users interest
-#' Note however that the old data is still saved. 
+#' Note that this will be saved in another slot, such that the original data will not be lost. 
 setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object, priority.interest) {
+  # - Filtering the DE gene set for the pahtways of interest
   .Object@de.kegg.genes.filtered <- .Object@de.kegg.genes %>%
     filter(pathway.name  %in% priority.interest) %>%
     arrange(-logFC)
+  
+  # - Filtering all genes for the pathways of interest
   .Object@all.kegg.genes.filtered <- .Object@all.kegg.genes %>%
     filter(pathway.name  %in% priority.interest) %>%
     arrange(-logFC)
+  
   .Object
 })
 
 
 #' @description This function can be used to plot the spread of FC in the pathways of 
-#' the users interest for de DE genes. 
-#' @param type typ 1 will produce a graph for each pathway seperately, whereas type 2
+#' the users interest for the DE genes. 
+#' @param type type 1 will produce a graph for each pathway seperately, whereas type 2
 #' will show the data for all pathways together.
 setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, type) {
   if (type == 1) {
@@ -101,7 +116,7 @@ setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, ty
       xlab('Pathway') +
       ylab('LogFC') +
       ggtitle('Global pathways changes') +
-      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.title = element_text(hjust = 0.5)) + 
       geom_hline(yintercept = 0, col = 'red', size = 0.9) 
   } else {
     # - Alternatively, we could plot these genes ordered by FC and color according to the pathway
@@ -115,7 +130,7 @@ setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, ty
 #' with both the ids and names. This can be handy to select pathway for the
 #' map.kegg.pathway function
 setMethod("get.kegg.table", signature("KEGG.annotater"), function(.Object) {
-  # Getting names for the provied path ids
+  # - Getting names for the provied path ids
   .Object@kegg.annotation %>% 
     dplyr::select(pathway.id, pathway.name) %>%
     filter(!is.na(pathway.id)) %>%
@@ -126,10 +141,10 @@ setMethod("get.kegg.table", signature("KEGG.annotater"), function(.Object) {
 #' @description This function uses the PathView package to map the genes to set of kegg pathways 
 #' provided by the user. Two layers are used to be able to plot gene names instead of EC numbers.
 setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, path.ids, path.names) {
-  # Formatting the data for KEGG analysis
+  # - Formatting the data for KEGG analysis
   kegg.format <- wcfs1@edger.de %>% dplyr::select(logFC)
   
-  # Helper function to map genes 
+  # - Helper function to map genes 
   map <- function(path.id, out.suffix) {
     pathview(gene.data = kegg.format, 
              gene.idtype = "KEGG" , 
@@ -143,9 +158,7 @@ setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, pat
 })
 
 
-#' @description This function  couples the KEGG annotation to DE genes and to
-#' all genes. 
-#' Pathview uses two files to create the output image:
+#' @description Pathview uses two files to create the output image:
 #' PNG image of the KEGG pathay
 #' XML file of the KEGG pathway
 #' Those aren't deleted automatically, therefore we 

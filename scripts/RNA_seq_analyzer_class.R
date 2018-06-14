@@ -11,9 +11,13 @@
 #' will be applied). The data from the venn diagram can be used to obtain all genes identiefied
 #' as DE in all packages. 
 #' 
-#' @details: Last update 4-07-18
+#' NOTE: We on purpose specify the package for each called function like edgeR::function as 
+#' some functions have the same name. 
+#' 
+#' @details: Last update 14-07-18
 #' @author Rick Beeloo, Koen v.d. Heide and Thomas Reinders
 #'###############################################################################################
+
 setClass(
   Class = "RNA.seq.analyzer", 
   representation = representation(count.matrix = "matrix",
@@ -86,21 +90,32 @@ setMethod("filter.low.counts", signature("RNA.seq.analyzer"), function(.Object, 
 setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
   require(limma)
   require(edgeR)
-  groups = factor(.Object@sample.annotation$condition)
+  # - Specifying the desing (and showing this to the user)
+  groups <- factor(.Object@sample.annotation$condition)
+  design <- model.matrix(~groups)
+  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
+  # - Normalization
   nf <- edgeR::calcNormFactors(.Object@count.matrix, method = 'TMM')
-  design = model.matrix(~groups)
   voom.data <- limma::voom(.Object@count.matrix, 
                            design,
                            lib.size = colSums(.Object@count.matrix) * nf)
-  voom.data$genes <- rownames(.Object@count.matrix)
+  
+  # - Fitting the linear model
   voom.fitlimma <- limma::lmFit(voom.data, design = design)
   voom.fitbayes <- limma::eBayes(voom.fitlimma)
+  
+  # - Correcting for multiple testing based on FDR
   voom.pvalues <- voom.fitbayes$p.value[, 2]
   voom.adjpvalues <- p.adjust(voom.pvalues, method = 'fdr')
+  
+  # - Formatting the results to a standard format and save this in a data frame
   voom.logFC <- voom.fitbayes$coefficients[, 2]
+  voom.data$genes <- rownames(.Object@count.matrix)
+  
   result.table <- data.frame('pvalue' = voom.pvalues, 'adjpvalue' = voom.adjpvalues, 'logFC' = voom.logFC)
   rownames(result.table) <- rownames(.Object@count.matrix)
-  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
   .Object@limma.result <- result.table
   .Object@limma.data <- voom.data
   .Object
@@ -111,26 +126,38 @@ setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
 #' whereas the standarized results will be saved in Object@edger.result 
 setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
   require(edgeR)
-  groups = factor(.Object@sample.annotation$condition)
-  edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
-  edgeR.dgelist <- edgeR::calcNormFactors(edgeR.dgelist, method = 'TMM')
+  # - Specifying the desing (and showing this to the user)
+  groups <- factor(.Object@sample.annotation$condition)
   design <- model.matrix(~0+group, data = edgeR.dgelist$samples)
   colnames(design) <- levels(edgeR.dgelist$samples$group)
+  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
+  # - Running edgeR normalization
+  edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
+  edgeR.dgelist <- edgeR::calcNormFactors(edgeR.dgelist, method = 'TMM')
+ 
+  # - Estimate Dispersion
   edgeR.dgelist <- edgeR::estimateGLMCommonDisp(edgeR.dgelist, design = design)
   edgeR.dgelist <- edgeR::estimateGLMTrendedDisp(edgeR.dgelist, design = design, method = 'power')
   edgeR.dgelist <- edgeR::estimateGLMTagwiseDisp(edgeR.dgelist, design = design)
+  
+  # - Fitting the linear model
   edgeR.fit <- edgeR::glmFit(edgeR.dgelist , design)
   def.con <<- paste0(unique(.Object@sample.annotation$condition)[2],
                 '-', unique(.Object@sample.annotation$condition)[1])
   mc <- limma::makeContrasts(def.con , levels = design)
   edgeR.glrt <- edgeR::glmLRT(edgeR.fit, contrast = mc)
   edgeR.dgelist$glmrt <- edgeR::glmLRT(edgeR.fit, contrast = mc)
+  
+  # - Correcting for multiple testing based on FDR
   edgeR.pvalues <- edgeR.glrt$table$PValue
   edgeR.adjpvalues <- p.adjust(edgeR.pvalues, method = 'fdr')
+  
+  # - Formatting the results to a standard format and save this in a data frame
   edgeR.logFC <- edgeR.glrt$table$logFC
   result.table <- data.frame('pvalue' = edgeR.pvalues, 'adjpvalue' = edgeR.adjpvalues, 'logFC' = edgeR.logFC)
   rownames(result.table) <- rownames(.Object@count.matrix)
-  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
   .Object@edger.result <- result.table
   .Object@edger.data <- edgeR.dgelist
   .Object
@@ -141,18 +168,26 @@ setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
 #' whereas the standarized results will be saved in Object@deseq2.result
 setMethod("run.deseq2", signature("RNA.seq.analyzer"), function(.Object) {
   require(DESeq2)
+  # - Specifying the desing (and showing this to the user)
   groups <- factor(.Object@sample.annotation$condition)
+  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
+  # - Running the default DESeq2 pipeline
   DESeq2.ds <-DESeq2::DESeqDataSetFromMatrix(countData = .Object@count.matrix, 
                                               colData = data.frame(condition = groups), 
                                               design = ~ condition)
   DESeq2.ds <- DESeq2::DESeq(DESeq2.ds, quiet = TRUE)
+  
+  # - Correcting for multiple testing based on FDR
   DESeq2.results <- DESeq2::results(DESeq2.ds, pAdjustMethod = 'fdr')
+  
+  # - Formatting the results to a standard format and save this in a data frame
   DESeq2.pvalues <- DESeq2.results$pvalue
   DESeq2.adjpvalues <- DESeq2.results$padj
   DESeq2.logFC <- DESeq2.results$log2FoldChange
   result.table <- data.frame('pvalue' = DESeq2.pvalues, 'adjpvalue' = DESeq2.adjpvalues, 'logFC' = DESeq2.logFC)
   rownames(result.table) <- rownames(.Object@count.matrix)
-  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  
   .Object@deseq2.result <- result.table
   .Object@deseq2.data <- DESeq2.ds
   .Object
@@ -183,7 +218,7 @@ setMethod("determine.significance", signature("RNA.seq.analyzer"), function(.Obj
 })
 
 #' @description This method can be used to draw a venn diagram of the DE genes
-#' This rquires that all the packages are called (either seperatetely 
+#' This requires that all the packages are called (either seperatetely 
 #' or all together using run.all) 
 setMethod("draw.venn.diagram", signature("RNA.seq.analyzer"), function(.Object) {
   require(VennDiagram)
