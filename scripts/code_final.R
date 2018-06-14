@@ -103,11 +103,22 @@ priority.interest <- c('Pyruvate metabolism','Glycolysis / Gluconeogenesis',
                        'Fatty acid biosynthesis','Galactose metabolism',
                        'Pentose phosphate pathway','Pyrimidine metabolism')
 
+# - Running the KEGG annotation code
 wcfs1.kegg <- new('KEGG.annotater',wcfs1.result, wcfs1.de, 'lpl')
-wcfs1.kegg <- get.kegg.annotation(wcfs1.kegg)
+wcfs1.kegg <- gather.kegg.annotation(wcfs1.kegg)
 wcfs1.kegg <- couple.kegg.annotation(wcfs1.kegg)
 wcfs1.kegg <- filter.kegg.pathways(wcfs1.kegg, priority.interest)
-map.kegg.pathway(wcfs1.kegg, c('lpl00010'))
+
+# - Looking at the data we found
+kegg.table <- get.kegg.table(wcfs1.kegg)
+print(kegg.table)
+
+# - We can download all pathways at once
+map.kegg.pathway(wcfs1.kegg, c('lpl03010'), c('ribose'))
+
+# - As pathview does not automatically remove the pathway PNG and XML files
+# - We wrote a little function to do so
+remove.junk(wcfs1.kegg, c('lpl00010','lpl03010'))
 
 
 ##################################################################################################
@@ -130,7 +141,7 @@ wcfs1.network <- build.nodes(wcfs1.network)
 wcfs1.network <- connect.nodes(wcfs1.network)
 
 # Show network in which user needs to move over the nodes to see the name
-network <- plot(wcfs1.network, 'name')
+network <- draw.network(wcfs1.network, 'name')
 network
 
 # Showing the genes names in the network, so hovering is not needed

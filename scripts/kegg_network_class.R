@@ -12,7 +12,7 @@ setGeneric("build.nodes", function(.Object)
 setGeneric("connect.nodes", function(.Object) 
   standardGeneric("connect.nodes") )
 
-setGeneric("plot", function(.Object, name, direct.visible = FALSE) 
+setGeneric("draw.network", function(.Object, name, direct.visible = FALSE) 
   standardGeneric("plot") )
 
 #' @description This forms the init of the class
@@ -23,8 +23,8 @@ setMethod("initialize", "KEGG.network", function(.Object, de.genes){
   .Object
 })
 
-#' @description This function builds a node data frame
-#' all genes. 
+#' @description This function builds a node data frame, this will contain
+#' nodes for each of the genes as well for each of the pathways
 setMethod("build.nodes", signature("KEGG.network"), function(.Object) {
   # - Building an ORF node set, we colored these nodes based on whether 
   # - the gene was identified as up or down regulated. Further 
@@ -57,11 +57,12 @@ setMethod("build.nodes", signature("KEGG.network"), function(.Object) {
   .Object
 })
 
+#' @description The edges in the network are defined by mentioning the index of the target 
+#' and source node in the `nodes` data frame, rather then specifing the node 
+#' names itself. 
 setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
-  # - The edges in the network are defined by mentioning the index of the target 
-  # - and source node in the `nodes` data frame, rather then specifing the node 
-  # - names itself. In defining the edges (links) we need to know the indeces of 
-  # - each node and therefore an linking table would make this much easier. 
+  # In defining the edges (links) we need to know the indeces of 
+  # each node and therefore a linking table would make this much easier. 
   nodes.indexed <- .Object@nodes %>%
     mutate(index = seq(0, n()-1))
   
@@ -76,7 +77,7 @@ setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
       left_join(nodes.indexed, by = c('pathway.name'='name')) %>%
       .$index
   )
-  links$value <- rep(1, nrow(links))
+  links$value <- rep(1, nrow(links)) # Give each node a size of 1
   colnames(links) <- c('source','target','value')
   
   .Object@links <- links
@@ -85,7 +86,7 @@ setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
 )
 
 
-setMethod("plot", signature("KEGG.network"), function(.Object, name, direct.visible = FALSE) {
+setMethod("draw.network", signature("KEGG.network"), function(.Object, name, direct.visible = FALSE) {
   opacity <- if (direct.visible) 1 else 0
   network <- forceNetwork(Links = .Object@links, Nodes = .Object@nodes, Source = "source",
                           Target = "target", Value = "value", NodeID = "name",

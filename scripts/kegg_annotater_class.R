@@ -11,8 +11,8 @@ setClass(
   
 )
 
-setGeneric("get.kegg.annotation", function(.Object) 
-  standardGeneric("get.kegg.annotation") )
+setGeneric("gather.kegg.annotation", function(.Object) 
+  standardGeneric("gather.kegg.annotation") )
 
 setGeneric("couple.kegg.annotation", function(.Object) 
   standardGeneric("couple.kegg.annotation") )
@@ -23,11 +23,15 @@ setGeneric("filter.kegg.pathways", function(.Object, priority.interest)
 setGeneric("plot.fold.changes", function(.Object, type) 
   standardGeneric("plot.fold.changes") )
 
-setGeneric("map.kegg.pathway", function(.Object, path.ids) 
+setGeneric("map.kegg.pathway", function(.Object, path.ids, path.names) 
   standardGeneric("map.kegg.pathway") )
 
-setGeneric("remove.junk", function(.Object, path.id) 
+setGeneric("remove.junk", function(.Object, path.ids) 
   standardGeneric("remove.junk") )
+
+setGeneric("get.kegg.table", function(.Object) 
+  standardGeneric("get.kegg.table") )
+
 
 
 #' @description This forms the init of the class
@@ -42,7 +46,7 @@ setMethod("initialize", "KEGG.annotater", function(.Object, all.genes, de.genes,
 
 #' @description This method queries the KEGG database for the species name and 
 #' retrieves the corresponding pathway and gene information
-setMethod("get.kegg.annotation", signature("KEGG.annotater"), function(.Object) {
+setMethod("gather.kegg.annotation", signature("KEGG.annotater"), function(.Object) {
   # - Retrieving data from KEGG and make annotation table hereof. Note that
   # - we could have used the KEGGREST package. However this package
   # - returns a character vector insted of a data frame, which would require 
@@ -55,7 +59,7 @@ setMethod("get.kegg.annotation", signature("KEGG.annotater"), function(.Object) 
   colnames(gene.info) <- c("ORF",'pathway.id','pathway.name')
   gene.info$ORF <- gsub(paste0(.Object@species,':'),'',gene.info$ORF)
   gene.info$pathway.id <- gsub('path:','',gene.info$pathway.id)
-  gene.info$pathway.name <- gsub(' -.*',"", gene.info$pathway.name)
+  gene.info$pathway.name <- gsub(' (-.*)|/',"", gene.info$pathway.name)
 
   # - Saving the results in the Object
   .Object@kegg.annotation <- .Object@de.genes %>% left_join(gene.info)
@@ -106,30 +110,36 @@ setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, ty
   }
 })
 
-#' @description This function  couples the KEGG annotation to DE genes and to
-#' all genes. 
-setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, path.ids) {
+
+#' @description This function can be used to obtain a table with the KEGG pathways,
+#' with both the ids and names. This can be handy to select pathway for the
+#' map.kegg.pathway function
+setMethod("get.kegg.table", signature("KEGG.annotater"), function(.Object) {
+  # Getting names for the provied path ids
+  .Object@kegg.annotation %>% 
+    dplyr::select(pathway.id, pathway.name) %>%
+    filter(!is.na(pathway.id)) %>%
+    unique()
+})
+
+
+#' @description This function uses the PathView package to map the genes to set of kegg pathways 
+#' provided by the user. Two layers are used to be able to plot gene names instead of EC numbers.
+setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, path.ids, path.names) {
   # Formatting the data for KEGG analysis
   kegg.format <- wcfs1@edger.de %>% dplyr::select(logFC)
-  
-  # Getting names for the provied path ids
-  path.names <- .Object@kegg.annotation %>% 
-    filter(pathway.id %in% path.ids) %>%
-    .$pathway.name %>% unique()
-  
-  print(path.names)
-  print(path.ids)
   
   # Helper function to map genes 
   map <- function(path.id, out.suffix) {
     pathview(gene.data = kegg.format, 
              gene.idtype = "KEGG" , 
              pathway.id = path.id , 
-             species = SPECIES,
+             out.suffix = out.suffix,
+             species = .Object@species,
              map.symbol = TRUE,        # show gene names when possible
              same.layer = FALSE)       # extra layer for the gene names
   }
-  mapply(map, path.ids, path.names)
+  results <- mapply(map, path.ids, path.names)
 })
 
 
@@ -140,13 +150,13 @@ setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, pat
 #' XML file of the KEGG pathway
 #' Those aren't deleted automatically, therefore we 
 #' wrote this function
-setMethod("remove.junk", signature("KEGG.annotater"), function(.Object, path.id) {
-  remove.junk <- function(path.id) {
-    png.base = paste0(path.id, '.png')
-    xml.file = paste0(path.id, '.xml')
-    if (file.exists(png.base)) file.remove(png.base)
-    if (file.exists(xml.file)) file.remove(xml.file)
-  }
+setMethod("remove.junk", signature("KEGG.annotater"), function(.Object, path.ids) {
+    for (path.id in path.ids)  {
+      png.base = paste0(path.id, '.png')
+      xml.file = paste0(path.id, '.xml')
+      if (file.exists(png.base)) file.remove(png.base)
+      if (file.exists(xml.file)) file.remove(xml.file) 
+    }
 })
 
 
