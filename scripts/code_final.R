@@ -145,67 +145,9 @@ network <- draw.network(wcfs1.network, 'name')
 network
 
 # Showing the genes names in the network, so hovering is not needed
-network.named <- plot(wcfs1.network, 'alt.name', TRUE)
+network.named <- draw.network(wcfs1.network, 'alt.name', TRUE)
 network.named
 
-##################################################################################################
-# WCFS1 analysis: Saving the network
-##################################################################################################
-original.wd <- getwd()
-setwd(paste0(original.wd,'/output'))
-saveNetwork(network.named, file = 'network_ribose_glucose.html', selfcontained = TRUE)
-
-##################################################################################################
-# WCFS1 analysis: Zooming in on the kegg pathways
-##################################################################################################
-# - After looking at the global changes regarding KEGG pathways it's useful to 
-# - zoom in on these. For this task we used the commonly used PathView package.
-
-# - Format the wcfs1.de data such that it can be handled by PathView
-kegg.format <- wcfs1@edger.de %>%
-  dplyr::select(logFC)
-
-# - Pathview uses two files to create the output image:
-# - PNG image of the KEGG pathay
-# - XML file of the KEGG pathway
-# - Those aren't deleted automatically, therefore we 
-# - wrote this function
-remove.junk <- function(path.id) {
-  png.base = paste0(path.id, '.png')
-  xml.file = paste0(path.id, '.xml')
-  if (file.exists(png.base)) file.remove(png.base)
-  if (file.exists(xml.file)) file.remove(xml.file)
-}
-
-# - This function will save the network for a given path id and 
-# - output suffix. 
-save.pathway <- function(path.id, out.suffix) {
-  pathview(gene.data = kegg.format, 
-           gene.idtype = "KEGG" , 
-           pathway.id = path.id , 
-           species = SPECIES,
-           out.suffix = out.suffix, 
-           map.symbol = TRUE,        # show gene names when possible
-           same.layer = FALSE)       # extra layer for the gene names
-  remove.junk(path.id)
-}
-
-# - To download a specific pathway
-save.pathway('lpl00010', 'glycolysis')
-
-# - Downloading all of them:
-# - We already coupled the WCFS1 genes to each pathway so we can simply use this
-# - same list to retrieve all pathway plots
-pathway.info <-gene.info %>% 
-  dplyr::select(pathway.id, pathway.name) %>%
-  mutate(pathway.name = str_remove_all(.$pathway.name,'/')) %>% #remove / as pathview can't handle these when saving
-  unique()
-
-# - Gathering the data for each of the pathways in pathway.info
-mapply(save.pathway, pathway.info$pathway.id, pathway.info$pathway.name)
-
-# Move out of the output folder and back to the main folder
-setwd(original.wd)
 
 ##################################################################################################
 # WCFS1 analysis: Why is the pentose phosphate pathway not enriched by ClusterProfiler
@@ -235,9 +177,6 @@ wcfs1.sign.talbe %>%
 wcfs1.sign.talbe %>%
   ggplot(aes(x = pathway.name, y = logFC, col = significant )) +
   geom_point(size = 3)
-
-
-
 
 
 
@@ -280,7 +219,7 @@ ridgeplot(kegg.gsea)
 # Saving the rigdeplot for the poster
 png("output/wcf1_kegg_gsea_ridge_plot.png", width = 30, height = 15, units = 'cm', res = 400)
 ridgeplot(kegg.gsea)
-dev.off(
+dev.off()
 
 
 
