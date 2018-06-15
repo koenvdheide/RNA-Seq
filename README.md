@@ -31,7 +31,7 @@ We initially chose the [ClusterProfiler](http://bioconductor.org/packages/releas
 
 ## The choice to use Classes
 We initially didn't even knew that R supported Object Orientated (OO) programming. After some reading we found out that there are different 'kinds' of objects, such as S3, S4 and R5 ([R OO page](https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?pageId=54652041)). As S4 objects gain popularity and are more and more used for R packages we decided to use these to perform the whole analysis. We wrote three S4 classes:
-* **RNA_seq_analyzer**: This class automatically determines the contrast based on the column names of the RNA-seq count matrix. Hereafter three RNA-seq packages can be used to test this contrast for the count matrix ([DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html) and [limma](http://bioconductor.org/packages/release/bioc/html/limma.html)). Moreover, this class draw 
+* **RNA_seq_analyzer**: This class automatically determines the contrast based on the column names of the RNA-seq count matrix. Hereafter three RNA-seq packages can be used to test this contrast for the count matrix ([DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html) and [limma](http://bioconductor.org/packages/release/bioc/html/limma.html)).
 * **KEGG_annotater**: This class uses the DE genes locus tags to retrieve information from the KEGG database. 
 * **KEGG_network**: This class draws a network for the diferentially expressed genes. These will be colored red and green for up- and down regulation respectively. 
 
