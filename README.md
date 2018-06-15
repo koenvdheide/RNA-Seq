@@ -5,6 +5,7 @@
 ***
 ## Describing the pipeline
 **Global overview**
+
 ![flow](images/flow.png)
 
 **RNA seq processing**
