@@ -89,7 +89,7 @@ setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Objec
 })
 
 
-#' @description This funtion filters the DE genes and all genes for pathways of the users interest
+#' @description This function filters the DE genes and all genes for pathways of the users interest
 #' Note that this will be saved in another slot, such that the original data will not be lost. 
 setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object, priority.interest) {
   print('Filtering for pathways of interest')
