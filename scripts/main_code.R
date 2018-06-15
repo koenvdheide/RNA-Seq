@@ -30,7 +30,7 @@ library(limma)
 library(clusterProfiler)
 
 # Setting working dir
-setwd('/home/rick/Desktop/HAN/jaar 3/HAN/RNA_seq_clean')
+setwd('.') 
 
 # Loading the other scripts we need
 source('scripts/venn.extract.R')
@@ -94,7 +94,7 @@ wcfs1.result <- wcfs1@edger.result %>%   rownames_to_column('ORF')
 # WCFS1 analysis: saving DE genes to a file
 ##################################################################################################
 # - Swith to output folder
-setwd('/home/rick/Desktop/HAN/jaar 3/HAN/RNA_seq_clean/output')
+setwd('/output')
 write.table(wcfs1.de, file = 'wcfs1_de_genes.txt',sep = '\t', row.names = F)
 
 ##################################################################################################
