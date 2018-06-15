@@ -59,7 +59,7 @@ setMethod("build.nodes", signature("KEGG.network"), function(.Object) {
   
   # - Combining the ORF and pathway nodes into a single data frame
   nodes <- rbind(orf.nodes, pathway.nodes)
-  cat(paste0(nrow(nodes), ' nodes were created'))
+  print(paste0(nrow(nodes), ' nodes were created'))
   
   .Object@nodes <- nodes
   .Object
@@ -87,7 +87,7 @@ setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
   )
   links$value <- rep(1, nrow(links)) # Give each node a size of 1
   colnames(links) <- c('source','target','value')
-  
+  print(paste0(nrow(links), ' links were made'))
   .Object@links <- links
   .Object
 }

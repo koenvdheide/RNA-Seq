@@ -10,6 +10,7 @@
 
 # Data formatting libraries
 library(tibble)
+library(tidyr)
 library(dplyr)
 
 # Plotting libraries
@@ -92,7 +93,9 @@ wcfs1.result <- wcfs1@edger.result %>%   rownames_to_column('ORF')
 ##################################################################################################
 # WCFS1 analysis: saving DE genes to a file
 ##################################################################################################
-write.table(wcfs1.de, file = 'output/wcfs1_de_genes.txt',sep = '\t', row.names = F)
+# - Swith to output folder
+setwd('/home/rick/Desktop/HAN/jaar 3/HAN/RNA_seq_clean/output')
+write.table(wcfs1.de, file = 'wcfs1_de_genes.txt',sep = '\t', row.names = F)
 
 ##################################################################################################
 # WCFS1 analysis: MA plot
@@ -113,16 +116,20 @@ wcfs1.kegg <- gather.kegg.annotation(wcfs1.kegg)
 wcfs1.kegg <- couple.kegg.annotation(wcfs1.kegg)
 wcfs1.kegg <- filter.kegg.pathways(wcfs1.kegg, priority.interest)
 
-# - Looking at the data we found
+# - Looking at the pathways we found and their ids
 kegg.table <- get.kegg.table(wcfs1.kegg)
 print(kegg.table)
 
 # - We can download all pathways at once
 map.kegg.pathway(wcfs1.kegg, kegg.table$pathway.id, kegg.table$pathway.name)
 
+# - Or specifcy specific pathways (such as the one of our interest)
+wanted <- kegg.table %>% filter(pathway.name %in% priority.interest)
+map.kegg.pathway(wcfs1.kegg, c('lpl03010','lpl03018'), c('Ribosome','RNA degradation'))
+
 # - As pathview does not automatically remove the pathway PNG and XML files
 # - We wrote a little function to do so
-remove.junk(wcfs1.kegg, wcfs1.kegg, kegg.table$pathway.id )
+remove.junk(wcfs1.kegg, kegg.table$pathway.id )
 
 
 ##################################################################################################
@@ -134,7 +141,7 @@ plot.fold.changes(wcfs1.kegg, type = 2)
 ##################################################################################################
 # WCFS1 analysis: saving DE + KEGG annotation to file
 ##################################################################################################
-write.table(wcfs1.kegg@de.kegg.genes, file = 'output/wcfs1_de_genes_kegg.txt',sep = '\t', row.names = F)
+write.table(wcfs1.kegg@de.kegg.genes, file = 'wcfs1_de_genes_kegg.txt',sep = '\t', row.names = F)
 
 ##################################################################################################
 # WCFS1 analysis: KEGG GSEA network using own code 
@@ -152,6 +159,10 @@ network
 network.named <- draw.network(wcfs1.network, 'alt.name', TRUE)
 network.named
 
+##################################################################################################
+# WCFS1 analysis: saving the network
+##################################################################################################
+saveNetwork(network.named, file = 'wcfs1_network.html', selfcontained = TRUE)
 
 #################################################################################################
 #------------------------------------------------------------------------------------------------
@@ -193,7 +204,7 @@ heatplot(kegg.gsea, foldChange=wcfs1.gene.list)
 ridgeplot(kegg.gsea)
 
 # Saving the rigdeplot for the poster
-png("output/wcf1_kegg_gsea_ridge_plot.png", width = 30, height = 15, units = 'cm', res = 400)
+png("wcf1_kegg_gsea_ridge_plot.png", width = 30, height = 15, units = 'cm', res = 400)
 ridgeplot(kegg.gsea)
 dev.off()
 

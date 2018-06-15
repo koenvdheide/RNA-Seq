@@ -58,7 +58,7 @@ setGeneric("run.edger", function(.Object)
 setGeneric("run.deseq2", function(.Object) 
   standardGeneric("run.deseq2") )
 
-setGeneric("filter.low.counts", function(.Object, cpm.cut.off) 
+setGeneric("filter.low.counts", function(.Object) 
   standardGeneric("filter.low.counts") )
 
 setGeneric("determine.significance", function(.Object, p.val) 
@@ -76,9 +76,10 @@ setGeneric("run.all", function(.Object)
 #' @description This method filters out genes with low counts
 #' @param wanted.ids, a list of gene ids for which the annotation should 
 #' be retrieved.
-setMethod("filter.low.counts", signature("RNA.seq.analyzer"), function(.Object, cpm.cut.off) {
+setMethod("filter.low.counts", signature("RNA.seq.analyzer"), function(.Object) {
   count.data <- .Object@count.matrix
-  keep <- rowSums(cpm(count.data)>1) >= 2
+  keep <<- rowSums(cpm(count.data)>1) >= 2
+  print(paste0(sum(keep == FALSE), ' genes were filtered out'))
   .Object@count.matrix <- count.data[keep,]
   .Object
 })
@@ -89,18 +90,22 @@ setMethod("filter.low.counts", signature("RNA.seq.analyzer"), function(.Object, 
 setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
   require(limma)
   require(edgeR)
-  # - Specifying the desing (and showing this to the user)
+  print('Running Limma')
+  
+  # - Specifying the groups
   groups <- factor(.Object@sample.annotation$condition)
+  
+  # - Specifying the design
   design <- model.matrix(~groups)
   print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
-  
+
   # - Normalization
   nf <- edgeR::calcNormFactors(.Object@count.matrix, method = 'TMM')
   voom.data <- limma::voom(.Object@count.matrix, 
                            design,
                            lib.size = colSums(.Object@count.matrix) * nf)
   
-  # - Fitting the linear model
+    # - Fitting the linear model
   voom.fitlimma <- limma::lmFit(voom.data, design = design)
   voom.fitbayes <- limma::eBayes(voom.fitlimma)
   
@@ -125,15 +130,19 @@ setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
 #' whereas the standarized results will be saved in Object@edger.result 
 setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
   require(edgeR)
+  print('Running edgeR')
+  
+  # - Specifying the groups
+  groups <- factor(.Object@sample.annotation$condition)
+  
   # - Running edgeR normalization
   edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
   edgeR.dgelist <- edgeR::calcNormFactors(edgeR.dgelist, method = 'TMM')
   
-  # - Specifying the contrast
-  groups <- factor(.Object@sample.annotation$condition)
+  # - Specifying the design
   design <- model.matrix(~0+group, data = edgeR.dgelist$samples)
   colnames(design) <- levels(edgeR.dgelist$samples$group)
-  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
+  print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2],'\n'))
  
   # - Estimate Dispersion
   edgeR.dgelist <- edgeR::estimateGLMCommonDisp(edgeR.dgelist, design = design)
@@ -167,6 +176,8 @@ setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
 #' whereas the standarized results will be saved in Object@deseq2.result
 setMethod("run.deseq2", signature("RNA.seq.analyzer"), function(.Object) {
   require(DESeq2)
+  print('Running DESeq2')
+  
   # - Specifying the desing (and showing this to the user)
   groups <- factor(.Object@sample.annotation$condition)
   print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))

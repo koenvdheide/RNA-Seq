@@ -46,7 +46,6 @@ setGeneric("get.kegg.table", function(.Object)
   standardGeneric("get.kegg.table") )
 
 
-
 #' @description This forms the init of the class
 #' @param all.genes, a data frame with all the genes obtained from the SeqDat class
 #' @param de.genes, a data frame with the DE genes obtained from the SeqDat class
@@ -64,6 +63,7 @@ setMethod("gather.kegg.annotation", signature("KEGG.annotater"), function(.Objec
   # - we could have used the KEGGREST package. However this package
   # - returns a character vector insted of a data frame, which would require 
   # - an extra processing step. 
+  print('Downloading data from KEGG')
   pathway.id.name <- read.table(paste0("http://rest.kegg.jp/list/pathway/", .Object@species), quote="", sep="\t")
   gene.pathway.id <- read.table(paste0("http://rest.kegg.jp/link/pathway/",.Object@species), quote="", sep="\t")
   gene.info <- left_join(gene.pathway.id, pathway.id.name, by = c('V2'='V1'))
@@ -81,7 +81,9 @@ setMethod("gather.kegg.annotation", signature("KEGG.annotater"), function(.Objec
 
 #' @description This function  couples the KEGG annotation to the genes
 setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Object) {
+  print('Coupling data to DE genes')
   .Object@de.kegg.genes <- .Object@de.genes %>% left_join(.Object@kegg.annotation)
+  print('Coupling data to All genes')
   .Object@all.kegg.genes <- .Object@all.genes %>% left_join(.Object@kegg.annotation)
   .Object
 })
@@ -90,6 +92,7 @@ setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Objec
 #' @description This funtion filters the DE genes and all genes for pathways of the users interest
 #' Note that this will be saved in another slot, such that the original data will not be lost. 
 setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object, priority.interest) {
+  print('Filtering for pathways of interest')
   # - Filtering the DE gene set for the pahtways of interest
   .Object@de.kegg.genes.filtered <- .Object@de.kegg.genes %>%
     filter(pathway.name  %in% priority.interest) %>%
@@ -102,7 +105,6 @@ setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object,
   
   .Object
 })
-
 
 #' @description This function can be used to plot the spread of FC in the pathways of 
 #' the users interest for the DE genes. 
@@ -121,7 +123,8 @@ setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, ty
   } else {
     # - Alternatively, we could plot these genes ordered by FC and color according to the pathway
     ggplot(.Object@de.kegg.genes.filtered, aes(x = seq(1,nrow(.Object@de.kegg.genes.filtered)), y = logFC, col = pathway.name)) +
-      geom_point(size = 2.5)
+      geom_point(size = 2.5) +
+      xlab('')
   }
 })
 
@@ -154,6 +157,7 @@ setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, pat
              map.symbol = TRUE,        # show gene names when possible
              same.layer = FALSE)       # extra layer for the gene names
   }
+  print('Mapping started..')
   results <- mapply(map, path.ids, path.names)
 })
 
