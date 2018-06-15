@@ -156,7 +156,7 @@ network <- draw.network(wcfs1.network, 'name')
 network
 
 # Showing the genes names in the network, so hovering is not needed
-network.named <- draw.network(wcfs1.network, 'alt.name', TRUE)
+network.named <- draw.network(wcfs1.network, 'alt.name', direct.visible =  TRUE)
 network.named
 
 ##################################################################################################
@@ -191,12 +191,12 @@ kegg.gsea <- gseKEGG(geneList  = wcfs1.gene.list,
 
 # - Plotting the fold changes of the genes and their connection to the pathway
 # - in which these were found. 
-p <- cnetplot(kegg.gsea, foldChange = wcfs1.gene.list, showCategory = priority.interest,
+cnet.plot <- cnetplot(kegg.gsea, foldChange = wcfs1.gene.list, showCategory = priority.interest,
               node_label = FALSE)
 
 # Hacky way to remove gene labels and increase size of pathway labels
-p$data$name <- gsub("lp.*"," ",p$data$name)
-p + geom_node_text(aes_(label=~name), size = 5)
+cnet.plot$data$name <- gsub("lp.*"," ",p$data$name)
+cnet.plot + geom_node_text(aes_(label=~name), size = 5)
 
 # Additional KEGG gsea plots
 emapplot(kegg.gsea, showCategory = priority.interest)
