@@ -34,7 +34,8 @@ setwd('/home/rick/Desktop/HAN/jaar 3/HAN/RNA_seq_clean')
 # Loading the other scripts we need
 source('scripts/venn.extract.R')
 source('scripts/RNA_seq_analyzer.R')
-source('scripts/kegg_annotater.R')
+source('scripts/KEGG_annotater.R')
+source('scripts/KEGG_network.R')
 
 ##################################################################################################
 #------------------------------------------------------------------------------------------------
@@ -45,6 +46,8 @@ source('scripts/kegg_annotater.R')
 ##################################################################################################
 # Loading data
 ##################################################################################################
+SPECIES = 'lpl'
+
 # - RNA seq counts
 count.data <- as.matrix(read.table('data/RNA-Seq-counts.txt', sep = '\t', header = T, skip = 1, row.names = 1))
 # - Outdated annotation 
@@ -152,37 +155,12 @@ network.named
 
 #################################################################################################
 #------------------------------------------------------------------------------------------------
-# PART 2: Comparing results with ClusterProfiler package
+# PART 2: KEGG analysis using ClusterProfiler package
 #------------------------------------------------------------------------------------------------
 #################################################################################################
-
-##################################################################################################
-# WCFS1 analysis: Why is the pentose phosphate pathway not enriched by ClusterProfiler
-##################################################################################################
-# Selecting all genes and look their pathways and color the according to whether these 
-# were significant (DE)
-wcfs1.sign.table <- wcfs1.kegg@all.kegg.genes.filtered %>%
-  mutate(significant = 
-           case_when(
-             adjpvalue < 0.05 ~ TRUE,
-             TRUE ~ FALSE # adjpvalue >-0.05 to FALSE
-           ))
-
-# Plotting the number of signifcant genes and non significant genes for 
-# each of the pathways of interest
-wcfs1.sign.table %>%
-  group_by(pathway.name, significant) %>%
-  summarise(count = n()) %>% # Counting the number of signifcant and non-significant genes per pathway
-  ggplot(aes( x = pathway.name, y = count, fill = significant)) +
-  geom_bar(stat = 'identity')
-
-
-# Plotting the fold change spread over the pahtways and color
-# according to whether the genes was signifcant or not
-wcfs1.sign.table %>%
-  ggplot(aes(x = pathway.name, y = logFC, col = significant )) +
-  geom_point(size = 3)
-
+# - This package did not really fit our needs, hence we wrote our own code (see above). We 
+# - decided to still include this code at the bottom as some of its plots were useful and it was
+# - still nice to have a comparison. 
 
 ##################################################################################################
 # WCFS1 analysis: GSEA KEGG using ClusterProfiler
@@ -219,6 +197,32 @@ png("output/wcf1_kegg_gsea_ridge_plot.png", width = 30, height = 15, units = 'cm
 ridgeplot(kegg.gsea)
 dev.off()
 
+##################################################################################################
+# WCFS1 analysis: Why is the pentose phosphate pathway not enriched by ClusterProfiler?
+##################################################################################################
+# Selecting all genes and look their pathways and color the according to whether these 
+# were significant (DE)
+wcfs1.sign.table <- wcfs1.kegg@all.kegg.genes.filtered %>%
+  mutate(significant = 
+           case_when(
+             adjpvalue < 0.05 ~ TRUE,
+             TRUE ~ FALSE # adjpvalue >-0.05 to FALSE
+           ))
+
+# Plotting the number of signifcant genes and non significant genes for 
+# each of the pathways of interest
+wcfs1.sign.table %>%
+  group_by(pathway.name, significant) %>%
+  summarise(count = n()) %>% # Counting the number of signifcant and non-significant genes per pathway
+  ggplot(aes( x = pathway.name, y = count, fill = significant)) +
+  geom_bar(stat = 'identity')
+
+
+# Plotting the fold change spread over the pahtways and color
+# according to whether the genes was signifcant or not
+wcfs1.sign.table %>%
+  ggplot(aes(x = pathway.name, y = logFC, col = significant )) +
+  geom_point(size = 3)
 
 
 

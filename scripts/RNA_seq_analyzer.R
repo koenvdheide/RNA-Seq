@@ -49,7 +49,6 @@ setMethod("initialize", "RNA.seq.analyzer", function(.Object, count.matrix, gene
   .Object
 })
 
-
 setGeneric("run.limma", function(.Object) 
   standardGeneric("run.limma") )
 
@@ -126,15 +125,15 @@ setMethod("run.limma", signature("RNA.seq.analyzer"), function(.Object) {
 #' whereas the standarized results will be saved in Object@edger.result 
 setMethod("run.edger", signature("RNA.seq.analyzer"), function(.Object) {
   require(edgeR)
-  # - Specifying the desing (and showing this to the user)
+  # - Running edgeR normalization
+  edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
+  edgeR.dgelist <- edgeR::calcNormFactors(edgeR.dgelist, method = 'TMM')
+  
+  # - Specifying the contrast
   groups <- factor(.Object@sample.annotation$condition)
   design <- model.matrix(~0+group, data = edgeR.dgelist$samples)
   colnames(design) <- levels(edgeR.dgelist$samples$group)
   print(paste0("contrast used: ", unique(groups)[1], ' vs ', unique(groups)[2]))
-  
-  # - Running edgeR normalization
-  edgeR.dgelist <- edgeR::DGEList(counts = .Object@count.matrix, group = groups)
-  edgeR.dgelist <- edgeR::calcNormFactors(edgeR.dgelist, method = 'TMM')
  
   # - Estimate Dispersion
   edgeR.dgelist <- edgeR::estimateGLMCommonDisp(edgeR.dgelist, design = design)
