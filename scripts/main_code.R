@@ -33,8 +33,8 @@ setwd('/home/rick/Desktop/HAN/jaar 3/HAN/RNA_seq_clean')
 
 # Loading the other scripts we need
 source('scripts/venn.extract.R')
-source('scripts/RNA_seq_analyzer_class.R')
-source('scripts/kegg_annotater_class.R')
+source('scripts/RNA_seq_analyzer.R')
+source('scripts/kegg_annotater.R')
 
 ##################################################################################################
 #------------------------------------------------------------------------------------------------

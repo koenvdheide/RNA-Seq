@@ -21,7 +21,7 @@ setGeneric("connect.nodes", function(.Object)
   standardGeneric("connect.nodes") )
 
 setGeneric("draw.network", function(.Object, name, direct.visible = FALSE) 
-  standardGeneric("plot") )
+  standardGeneric("draw.network") )
 
 #' @description This forms the init of the class
 #' @params de.genes is a set of genes identified as differentially expressed with their
