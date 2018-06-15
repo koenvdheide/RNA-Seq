@@ -40,16 +40,19 @@ What we liked about using these classes is the encapsulation of the data within 
 
 ## Biological interpretation
 For our analysis we specifically focused on the difference between ribose and glucose growth medium for the WCFS1 *L.plantarum* strain. All genes were mapped to their pathways and then we performed an enrichment analysis on these pathways (using the ClusterProfiler package) (figure 1). 
+
 ![Figure1](images/Fig-1.PNG)
 
 As seen in figure 1, most pathways that our genes mapped to exhibited upregulation with only arginine and ribosome biosynthesis showing downregulation. These pathways consist of interconnected genes, hence an overall fold change such as in figure 1 can reveal global changes, but fails to pinpoint specific fluxes. Moreover, this does not show pathway connections, which is of particular interest when analyzing the species response. Considering this, we decided to make a network showing the genes and the pathways in which these participated(figure 2). 
+
 ![Figure2](images/Fig-2.PNG)
 
 With the genes mapped back to their pathways we can see that, although the pathways are overall upregulated, there are still genes included that show down regulation. A particularly important downregulated gene is pfk, a key enzyme in glycolysis. Its downregulation hints that glycolysis as a whole is inhibited. Conversely, the upregulation of other genes in the glycolysis/gluconeogenesis pathway indicates an increase in gluconeogenesis. These findings are in accordance with expectations, in a ribose rich but glucose poor medium it’s sensible for WCFS1 to promote glucose construction. Interestingly, genes regulating the breakdown of glycogen are also upregulated, 
 therby forming another glucose source. We created an overview of the most relevant genes and the substrates of their enzymes in figure 3 to visualize the myriad differential expressions and their effects. 
+
 ![Figure3](images/Fig-3.PNG)
 
-It can now be clearly seen that ribose importing shows upregulation, obviously expected as ribose is the only probable energy source present in its grotwth medium. The breakdown of pyruvate also seems to be highly upregulated, the biological explanation of this is unclear. Besides our biological interpretation, we also compared our results with a similar study in *L.sakei*. This showed perfect accordance in pathway patterns. Moreover, the detailed figure we made (figure 3) showed exactly the same patterns as discussed in the *L.sakei* study (except that our dataset lacked some genes mentioned in their figure). 
+It can now be clearly seen that ribose importing shows upregulation, obviously expected as ribose is the only probable energy source present in its grotwth medium. The breakdown of pyruvate also seems to be highly upregulated, the biological explanation of this is unclear. Besides our biological interpretation, we also compared our results with a [similar study in *L.sakei*](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146418/). This showed perfect accordance in pathway patterns. Moreover, the detailed figure we made (figure 3) showed exactly the same patterns as discussed in the *L.sakei* study (except that our dataset lacked some genes mentioned in their figure). 
 
 
 
