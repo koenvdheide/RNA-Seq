@@ -187,7 +187,7 @@ wcfs1.gene.list = sort(wcfs1.gene.list, decreasing = TRUE)
 kegg.gsea <- gseKEGG(geneList  = wcfs1.gene.list,
                      organism = SPECIES,
                      pvalueCutoff = 0.05, 
-                     minGSSize = 1)
+                     minGSSize = 1) #minimal size of each geneSet for analyzing
 
 # - Plotting the fold changes of the genes and their connection to the pathway
 # - in which these were found. 
@@ -195,7 +195,7 @@ cnet.plot <- cnetplot(kegg.gsea, foldChange = wcfs1.gene.list, showCategory = pr
               node_label = FALSE)
 
 # Hacky way to remove gene labels and increase size of pathway labels
-cnet.plot$data$name <- gsub("lp.*"," ",p$data$name)
+cnet.plot$data$name <- gsub("lp.*"," ",cnet.plot$data$name)
 cnet.plot + geom_node_text(aes_(label=~name), size = 5)
 
 # Additional KEGG gsea plots
@@ -217,7 +217,7 @@ wcfs1.sign.table <- wcfs1.kegg@all.kegg.genes.filtered %>%
   mutate(significant = 
            case_when(
              adjpvalue < 0.05 ~ TRUE,
-             TRUE ~ FALSE # adjpvalue >-0.05 to FALSE
+             TRUE ~ FALSE # adjpvalue >= 0.05 to FALSE
            ))
 
 # Plotting the number of signifcant genes and non significant genes for 
