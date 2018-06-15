@@ -1,5 +1,5 @@
 # RNA-seq pipeline
-**Authors:** *Rick Beeloo, Koen van der Heide & Thomas Reinders*
+**Authors:** *Rick Beeloo, Koen van der Heide & Thomas Reinders* <br>
 **Goal:** *Simple R script to identify RNA reads and deliver biological relevant data.*
 
 ***
