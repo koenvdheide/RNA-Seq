@@ -5,9 +5,11 @@
 ***
 ## Describing the pipeline
 **Global overview**
+
 ![flow](images/flow.png)
 
 **RNA seq processing**
+
 The main script (`main_code.R`)  reads the RNA-seq data and the annotation hereof. Then this data will be fed to the `RNA_seq_analyzer` class, like so:
 ```R
 wcfs1 <- new('RNA.seq.analyzer',count.data[,1:4], anno)
@@ -22,6 +24,7 @@ lp_0002 0.1901134166 0.3198894710 -0.20621807
 As there is a lot of debate around "what is the best package" we choose to add the functionality to draw a venn diagram for the three packages showing the overlapping and non-overlapping genes. We chose to proceed working with the edgeR result, however we could have obtained the core (i.e intersect) of all packages using `wcfs1@venn.data$limmaedgerdeseq2`. 
 
 **Kegg analysis**
+
 We initially chose the [ClusterProfiler](http://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) package for this task. Although multiple plots were useful (such as the rigdeplot, emmaplot and heatplot) (see part II of the code), the enrichment was not that reliable as we only had orthologous genes. Hence, a key pathway, the pentose phosphote phatway, was not significantly enriched despite it contained genes with fold changes >8 (rbsK, rbsU, rbsR). That's why we started writing our own code. We accommodated this code in the `kegg_annotater` class. This first retrieves all KEGG data for the organism in question, in this case for 'lpl' (*Lactobasillus plantarum*). This information will then be coupled to the whole gene set and the DE gene set. Then we filtered for pathways for which we knew were relevant, such as glycolysis, pentose phospate pathway, pyruvate etc. (see code for the full list). We plotted the spread of fold changes in these pathways. We really liked the `cnetplot` produced by ClusterProfiler, however, as stated previously, this did not include all pathways we were interested in and did not allow for any felxibility (as we could not change colors, force between nodes, edge widths etc.) Therefore we also wrote the `kegg_network` class which uses the [NetworkD3](https://christophergandrud.github.io/networkD3/) package. This roughly produces the same plot as `cnetplot` but this time we have the flexibility to change all the desired parameters and one major advantage of using networkD3 instead to igraph is that we can easily export this to a `.svg` file (Which is nice for a poster!). 
 
 ***
