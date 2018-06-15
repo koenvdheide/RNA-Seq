@@ -40,10 +40,13 @@ What we liked about using these classes is the encapsulation of the data within 
 
 ## Biological interpretation
 For our analysis we specifically focused on the difference between ribose and glucose growth medium for the WCFS1 L.plantarum strain. Genes that showed statistically significant differential expression were mapped to their pathways and then we performed an enrichment analysis on these pathways (figure 1). 
- ![Figure1](images/Fig-1.PNG)
+![Figure1](images/Fig-1.PNG)
+
 As seen in figure 1, most pathways that our genes mapped to exhibited upregulation with only arginine and ribosome biosynthesis showing downregulation. As it’s impossible to say which process exactly is influenced by an overall pathway fold change we then looked back at the fold changes of individual genes but this time in the context of their pathways (figure 2). We chose only genes from pathways directly related to ribose and glucose metabolism as the biological implication of other pathways showing differential expression, such as pyrimidine metabolism and arginine biosynthesis, is unclear. 
+![Figure2](images/Fig-2.PNG)
 
 With the genes mapped back to their pathways we can see that, although the pathways are overall upregulated, there are still genes included that show down regulation. A particularly important downregulated gene is pfk, a key enzyme in glycolysis. Its downregulation hints that glycolysis as a whole is inhibited. Conversely, the upregulation of other genes in the glycolysis/gluconeogenesis pathway indicates an increase in gluconeogenesis. These findings are in accordance with expectations, in a ribose rich but glucose poor medium it’s sensible for WCFS1 to promote glucose construction. Interestingly, genes regulating the breakdown of glycogen are also upregulated, it’s possible glycogen is broken down to create more glucose. We created an overview of the most relevant genes and the substrates of their enzymes in figure 3 to visualize the myriad differential expressions and their effects. 
+![Figure3](images/Fig-3.PNG)
 
 It can now be clearly seen that ribose importing shows upregulation, obviously expected as WCFS1 has to now use ribose as its energy source. The breakdown of pyruvate also seems to be highly upregulated, the biological explanation of this is unclear.
 
