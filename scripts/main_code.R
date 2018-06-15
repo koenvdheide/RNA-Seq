@@ -105,7 +105,7 @@ plotSmear(wcfs1.edgerobj, de.tags = wcfs1.de$ORF)
 ##################################################################################################
 # WCFS1 analysis: Gather KEGG annotation and filtering it
 ##################################################################################################
-# - As one gene can correspond to multiple pathways we will specifcy our pathways of interest
+# - As one gene can correspond to multiple pathways we will specify our pathways of interest
 priority.interest <- c('Pyruvate metabolism','Glycolysis / Gluconeogenesis',
                        'Fatty acid biosynthesis','Galactose metabolism',
                        'Pentose phosphate pathway','Pyrimidine metabolism')
@@ -151,7 +151,7 @@ wcfs1.network <- new('KEGG.network',de.genes.annotated)
 wcfs1.network <- build.nodes(wcfs1.network)
 wcfs1.network <- connect.nodes(wcfs1.network)
 
-# Show network in which user needs to move over the nodes to see the name
+# Show network in which user needs to hover over the nodes to see the name
 network <- draw.network(wcfs1.network, 'name')
 network
 
@@ -178,7 +178,7 @@ saveNetwork(network.named, file = 'wcfs1_network.html', selfcontained = TRUE)
 ##################################################################################################
 # - Format data for Enrichment analsyis
 # - Making a ranked list of genes based on their fold changes
-# - Note that we use all genes here not the DE only
+# - Note that we use all genes here not only the DE ones
 wcfs1.gene.list <- wcfs1.result$logFC
 names(wcfs1.gene.list) <- wcfs1.result$ORF
 wcfs1.gene.list = sort(wcfs1.gene.list, decreasing = TRUE)
