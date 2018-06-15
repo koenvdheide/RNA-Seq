@@ -53,7 +53,7 @@ setMethod("build.nodes", signature("KEGG.network"), function(.Object) {
   pathway.nodes <- .Object@de.genes %>%
     group_by(pathway.name) %>%
     summarise(size = n()) %>%
-    mutate(group = rep('pathway',n()),
+    mutate(group = rep('pathway',n()), # Couting the number of nodes per pathway
            alt.name = pathway.name) %>% # just use same name as alternative name
     dplyr::select(name = pathway.name, alt.name, group, size)
   
@@ -72,7 +72,7 @@ setMethod("connect.nodes", signature("KEGG.network"), function(.Object) {
   # In defining the edges (links) we need to know the indeces of 
   # each node and therefore a linking table would make this much easier. 
   nodes.indexed <- .Object@nodes %>%
-    mutate(index = seq(0, n()-1))
+    mutate(index = seq(0, n()-1)) # -1 as networkD3 starts counting at zero
   
   # - building a link set; defining which nodes are connected.
   # - Important here is that the nodes are coupled based on 
