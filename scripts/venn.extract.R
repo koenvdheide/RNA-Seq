@@ -1,4 +1,6 @@
-# This code was copied from https://stackoverflow.com/questions/23559371/how-to-get-the-list-of-items-in-venn-diagram-in-r
+# Adapted from a Stack Overflow answer, licensed CC BY-SA 3.0 (not under this
+# repository's MIT license). Attribution: the original author(s) of the answer at
+# https://stackoverflow.com/questions/23559371/how-to-get-the-list-of-items-in-venn-diagram-in-r
 
 Intersect <- function (x) {  
   # Multiple set version of intersect

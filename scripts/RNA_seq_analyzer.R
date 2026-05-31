@@ -8,7 +8,7 @@
 #' also allows to construct a venn diagram showing the differences between these methods.
 #' Lastly, this class saves the DE genes for each package using the same format, facilitating
 #' comparison and allowing fair p-value comparison (as e.g. the same correction methods 
-#' will be applied). The data from the venn diagram can be used to obtain all genes identiefied
+#' will be applied). The data from the venn diagram can be used to obtain all genes identified
 #' as DE in all packages. 
 #' 
 #' NOTE: We on purpose specify the package for each called function like edgeR::function as 
@@ -228,7 +228,7 @@ setMethod("determine.significance", signature("RNA.seq.analyzer"), function(.Obj
 })
 
 #' @description This method can be used to draw a venn diagram of the DE genes
-#' This requires that all the packages are called (either seperatetely 
+#' This requires that all the packages are called (either separately
 #' or all together using run.all) 
 setMethod("draw.venn.diagram", signature("RNA.seq.analyzer"), function(.Object) {
   require(VennDiagram)
