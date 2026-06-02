@@ -79,6 +79,6 @@ This was a course project, and a few rough edges are kept as-is rather than sile
 
 ## Credits and license
 
-Written by Rick Beeloo, Koen van der Heide, and Thomas Reinders (HAN University of Applied Sciences, 2018). The Venn set-extraction helper in `scripts/venn.extract.R` is adapted from a [Stack Overflow answer](https://stackoverflow.com/questions/23559371/how-to-get-the-list-of-items-in-venn-diagram-in-r) and is licensed CC BY-SA 3.0, not under this repository's MIT license.
+Written by Rick Beeloo, Koen van der Heide, and Thomas Reinders (HAN University of Applied Sciences, 2018). The Venn set-extraction helper in `scripts/venn.extract.R` is adapted from [Anders Ellern Bilgrau's Stack Overflow answer](https://stackoverflow.com/a/23560500) and is licensed CC BY-SA 3.0, not under this repository's MIT license.
 
 The original R code is released under the MIT License (see `LICENSE`), except `scripts/venn.extract.R` (CC BY-SA 3.0, noted above). The RNA-seq count data and annotation in `data/` are identified by their file headers as Todt/HAN course material; no license is granted for the data, and reuse requires permission from the original rights holder.

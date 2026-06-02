@@ -23,10 +23,10 @@ SOFTWARE.
 The MIT License above applies to the original source code in this repository,
 with the exceptions noted below.
 
-scripts/venn.extract.R is not original work. It is adapted from a Stack Overflow
-answer (https://stackoverflow.com/questions/23559371/how-to-get-the-list-of-items-in-venn-diagram-in-r)
-and is therefore licensed under CC BY-SA 3.0, attributed to its original
-author(s) on that page, not under the MIT License.
+scripts/venn.extract.R is not original work. It is adapted from Anders Ellern
+Bilgrau's Stack Overflow answer (https://stackoverflow.com/a/23560500) and is
+therefore licensed under CC BY-SA 3.0, attributed to that author, not under the
+MIT License.
 
 The RNA-seq count data and annotation in data/ are identified by their file
 headers as Todt/HAN material. They were provided as course material at HAN
