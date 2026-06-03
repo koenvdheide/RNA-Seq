@@ -123,7 +123,7 @@ print(kegg.table)
 # - We can download all pathways at once
 map.kegg.pathway(wcfs1.kegg, kegg.table$pathway.id, kegg.table$pathway.name)
 
-# - Or specifcy specific pathways (such as the one of our interest)
+# - Or specify specific pathways (such as the one of our interest)
 wanted <- kegg.table %>% filter(pathway.name %in% priority.interest)
 map.kegg.pathway(wcfs1.kegg, c('lpl03010','lpl03018'), c('Ribosome','RNA degradation'))
 
@@ -176,7 +176,7 @@ saveNetwork(network.named, file = 'wcfs1_network.html', selfcontained = TRUE)
 ##################################################################################################
 # WCFS1 analysis: GSEA KEGG using ClusterProfiler
 ##################################################################################################
-# - Format data for Enrichment analsyis
+# - Format data for Enrichment analysis
 # - Making a ranked list of genes based on their fold changes
 # - Note that we use all genes here not only the DE ones
 wcfs1.gene.list <- wcfs1.result$logFC
@@ -220,17 +220,17 @@ wcfs1.sign.table <- wcfs1.kegg@all.kegg.genes.filtered %>%
              TRUE ~ FALSE # adjpvalue >= 0.05 to FALSE
            ))
 
-# Plotting the number of signifcant genes and non significant genes for 
+# Plotting the number of significant genes and non significant genes for
 # each of the pathways of interest
 wcfs1.sign.table %>%
   group_by(pathway.name, significant) %>%
-  summarise(count = n()) %>% # Counting the number of signifcant and non-significant genes per pathway
+  summarise(count = n()) %>% # Counting the number of significant and non-significant genes per pathway
   ggplot(aes( x = pathway.name, y = count, fill = significant)) +
   geom_bar(stat = 'identity')
 
 
-# Plotting the fold change spread over the pahtways and color
-# according to whether the genes was signifcant or not
+# Plotting the fold change spread over the pathways and color
+# according to whether the genes was significant or not
 wcfs1.sign.table %>%
   ggplot(aes(x = pathway.name, y = logFC, col = significant )) +
   geom_point(size = 3)

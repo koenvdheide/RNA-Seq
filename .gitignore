@@ -1,0 +1,7 @@
+# Generated analysis outputs
+/output/
+
+# R session artifacts
+.Rhistory
+.RData
+.Rproj.user/

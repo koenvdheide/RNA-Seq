@@ -5,8 +5,8 @@
 #' a plot from the pathview package. In the latter the genes names will be shown and the rectangles 
 #' , which represent genes, will be coloured according to their fold change. Furthermore, pathview
 #' produces some files such as a PNG file, XML file and a result PNG file. Unfortunately the
-#' pathview packackage does not remove the files it uses to create the output PNG, therefore
-#' we also added a little function to remove these. #' 
+#' pathview package does not remove the files it uses to create the output PNG, therefore
+#' we also added a little function to remove these.
 #' @details: Last update 14-07-18
 #' @author Rick Beeloo, Koen v.d. Heide and Thomas Reinders
 #'###############################################################################################
@@ -93,7 +93,7 @@ setMethod("couple.kegg.annotation", signature("KEGG.annotater"), function(.Objec
 #' Note that this will be saved in another slot, such that the original data will not be lost. 
 setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object, priority.interest) {
   print('Filtering for pathways of interest')
-  # - Filtering the DE gene set for the pahtways of interest
+  # - Filtering the DE gene set for the pathways of interest
   .Object@de.kegg.genes.filtered <- .Object@de.kegg.genes %>%
     filter(pathway.name  %in% priority.interest) %>%
     arrange(-logFC)
@@ -108,7 +108,7 @@ setMethod("filter.kegg.pathways", signature("KEGG.annotater"), function(.Object,
 
 #' @description This function can be used to plot the spread of FC in the pathways of 
 #' the users interest for the DE genes. 
-#' @param type type 1 will produce a graph for each pathway seperately, whereas type 2
+#' @param type type 1 will produce a graph for each pathway separately, whereas type 2
 #' will show the data for all pathways together.
 setMethod("plot.fold.changes", signature("KEGG.annotater"), function(.Object, type) {
   if (type == 1) {
@@ -163,7 +163,7 @@ setMethod("map.kegg.pathway", signature("KEGG.annotater"), function(.Object, pat
 
 
 #' @description Pathview uses two files to create the output image:
-#' PNG image of the KEGG pathay
+#' PNG image of the KEGG pathway
 #' XML file of the KEGG pathway
 #' Those aren't deleted automatically, therefore we 
 #' wrote this function
